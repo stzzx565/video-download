@@ -150,9 +150,18 @@ def log_setup(log_to_console=True):
         # logger已经被设置，不做任何操作
         return logger
 
-    # 创建临时的日志目录
-    temp_log_dir = Path("./logs")
-    temp_log_dir.mkdir(exist_ok=True)
+    # 云函数环境使用 /tmp 目录（唯一可写的位置）
+    import os
+    if os.path.exists('/var/user') or os.path.exists('/tmp'):
+        temp_log_dir = Path("/tmp/logs")
+    else:
+        temp_log_dir = Path("./logs")
+    
+    try:
+        temp_log_dir.mkdir(exist_ok=True)
+    except (OSError, PermissionError):
+        temp_log_dir = Path("/tmp/logs")
+        temp_log_dir.mkdir(exist_ok=True)
 
     # 初始化日志管理器
     log_manager = LogManager()
