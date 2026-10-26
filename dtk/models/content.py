@@ -18,10 +18,15 @@ Three rules hold everywhere in this module:
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from dtk.core.types import ContentKind, Platform
+
+#: PEP 695 的 ``class Page[T]`` 语法需要 Python 3.12;云函数运行环境是 3.10,
+#: 这里用 TypeVar + Generic 等价改写(两种版本行为一致)。
+T = TypeVar("T")
 
 
 class _Base(BaseModel):
@@ -192,7 +197,7 @@ class Collection(_Base):
     raw: dict | None = None
 
 
-class Page[T](BaseModel):
+class Page(BaseModel, Generic[T]):
     """A page of results with an opaque cursor.
 
     Douyin pages by a ``max_cursor`` timestamp and TikTok by an offset; both are
