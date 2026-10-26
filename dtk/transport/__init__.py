@@ -24,27 +24,42 @@ from dtk.transport.classify import (
     classify_detailed,
     classify_exception,
 )
-from dtk.transport.emulation import (
-    DriftBand,
-    EmulationProfile,
-    EmulationUnavailable,
-    ProfileMatch,
-    UnknownBrowserFamily,
-    UnsupportedFingerprint,
-    emulation_drift,
-    emulation_for,
-    known_majors,
-    profile_for,
-    select_profile,
-)
-from dtk.transport.headers import build_headers
-from dtk.transport.wreq_transport import (
-    ClientFactory,
-    ClientOptions,
-    TransportStats,
-    WreqTransport,
-    default_client_factory,
-)
+
+# emulation / headers / wreq_transport 依赖 wreq(Rust 扩展,需 Python 3.11+ 的
+# 官方 wheel 且环境能编译)。云函数等无 wreq 环境下让它们优雅缺失,
+# 上层(douyin_v5 + cloud_cffi_transport)改走 curl_cffi 传输层。
+try:
+    from dtk.transport.emulation import (
+        DriftBand,
+        EmulationProfile,
+        EmulationUnavailable,
+        ProfileMatch,
+        UnknownBrowserFamily,
+        UnsupportedFingerprint,
+        emulation_drift,
+        emulation_for,
+        known_majors,
+        profile_for,
+        select_profile,
+    )
+    from dtk.transport.headers import build_headers
+except ImportError:  # pragma: no cover - 无 wreq 环境
+    DriftBand = EmulationProfile = EmulationUnavailable = None
+    ProfileMatch = UnknownBrowserFamily = UnsupportedFingerprint = None
+    emulation_drift = emulation_for = known_majors = None
+    profile_for = select_profile = build_headers = None
+
+try:
+    from dtk.transport.wreq_transport import (
+        ClientFactory,
+        ClientOptions,
+        TransportStats,
+        WreqTransport,
+        default_client_factory,
+    )
+except ImportError:  # pragma: no cover - 无 wreq 环境
+    ClientFactory = ClientOptions = TransportStats = None
+    WreqTransport = default_client_factory = None
 
 __all__ = [
     "Classification",
