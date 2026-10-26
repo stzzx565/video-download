@@ -38,8 +38,12 @@ import sys
 import random
 import secrets
 import datetime
-import browser_cookie3
 import importlib_resources
+
+try:
+    import browser_cookie3
+except ImportError:
+    browser_cookie3 = None
 
 from pydantic import BaseModel
 
