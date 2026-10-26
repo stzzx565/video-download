@@ -18,7 +18,7 @@ import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeVar
 
 import httpx
 from pydantic import ValidationError
@@ -49,7 +49,9 @@ class Context:
     config: Config
 
 
-type Operation[T] = Callable[[Context], Awaitable[T]]
+# PEP 695 的 ``type X[T] = ...`` 别名需要 Python 3.12;云函数环境是 3.10,等价改写
+_OpT = TypeVar("_OpT")
+Operation = Callable[[Context], Awaitable[_OpT]]
 
 
 def load_settings() -> BootstrapSettings:
@@ -69,7 +71,8 @@ def load_settings() -> BootstrapSettings:
         output.fail(f"invalid bootstrap configuration: {exc}", hint="check the DTK_* environment")
 
 
-def run[T](factory: Callable[[], Coroutine[Any, Any, T]]) -> T:
+# PEP 695 的 ``def run[T](...)`` 泛型函数需要 Python 3.12;云函数环境是 3.10,等价改写
+def run(factory: Callable[[], Coroutine[Any, Any, _OpT]]) -> _OpT:
     """Run one coroutine and map infrastructure failures onto exit code 1.
 
     A factory rather than a coroutine: an unawaited coroutine object left
@@ -124,12 +127,13 @@ async def open_context(
         await dispose_engine()
 
 
-def with_context[T](
-    operation: Operation[T],
+# 原 PEP 695 写法: def with_context[T](operation: Operation[T], ...) -> T
+def with_context(
+    operation: Operation,
     *,
     redis: bool = False,
     config: bool = False,
-) -> T:
+):
     """Run ``operation`` against a live context and return its result.
 
     ``redis`` and ``config`` are opt-in because ``dtk user passwd`` must work on
@@ -139,7 +143,7 @@ def with_context[T](
     """
     settings = load_settings()
 
-    async def _main() -> T:
+    async def _main():
         async with open_context(settings, redis=redis, config=config) as ctx:
             return await operation(ctx)
 
