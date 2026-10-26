@@ -177,8 +177,10 @@ class SignedParams:
     """
 
     query: str
-    params: Mapping[str, str] = _EMPTY
-    headers: Mapping[str, str] = _EMPTY
+    # MappingProxyType 不可哈希,Python 3.11 的 dataclasses 会拒绝它作为默认值
+    # (3.12 允许);用 default_factory 等价改写,两种版本行为一致。
+    params: Mapping[str, str] = field(default_factory=lambda: _EMPTY)
+    headers: Mapping[str, str] = field(default_factory=lambda: _EMPTY)
     signer: str = SIGNER_NATIVE
     algorithm: SignatureAlgorithm = SignatureAlgorithm.A_BOGUS
 
@@ -298,7 +300,8 @@ class SigningSession:
 
     #: The jar the request will be sent with. Empty means an anonymous
     #: signature, which is only coherent for a caller that sends no cookies.
-    cookies: Mapping[str, str] = _EMPTY
+    #: MappingProxyType 不可哈希,3.11 dataclasses 拒绝其作默认值,等价改写如下。
+    cookies: Mapping[str, str] = field(default_factory=lambda: _EMPTY)
     #: The exit the request will leave through, so the signing page can present
     #: these cookies from the address they belong to.
     proxy_url: str | None = None
