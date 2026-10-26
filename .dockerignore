@@ -1,0 +1,40 @@
+# 密钥与身份文件（绝不进镜像）
+_cos_key.json
+douyin_identity.json
+identity_pool.json
+cloud_scf/identity_seed.json
+*_identity.json
+*_seed.json
+
+# 本地测试 / 调试产物
+_localtest_pkg/
+_py311/
+_py311.zip
+_py311_windeps/
+_pip_debug2/
+_check_*.py
+_debug_*.py
+_find_*.py
+_gen_*.py
+_grep_*.py
+_list_*.py
+_mint_*.py
+_patch_*.py
+_peek_*.py
+_probe_*.py
+_sweep_*.py
+_setup_*.py
+_test_*.py
+_t311.txt
+_build_out.txt
+_test_out.txt
+123.jpg
+1234.jpg
+
+# 常规忽略
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
